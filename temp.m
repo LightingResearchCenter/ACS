@@ -31,6 +31,9 @@ for iSubject = 1:nSubject
     thisSubjectDir = subjectDirArray{iSubject};
     
     originalCdfListing = dir([thisSubjectDir,filesep,'*.cdf']);
+    if isempty(originalCdfListing)
+        continue;
+    end
     originalCdfPath = fullfile(thisSubjectDir,originalCdfListing(1).name);
     
     croppedCdfPath = fullfile(croppedDir,originalCdfListing(1).name);
@@ -38,22 +41,11 @@ for iSubject = 1:nSubject
     diaryListing = dir([thisSubjectDir,filesep,'*.xlsx']);
     diaryPath = fullfile(thisSubjectDir,diaryListing(1).name);
     
-    daysimeter12.cropcdf(originalCdfPath,croppedCdfPath,diaryPath);
+    ACScropcdf(originalCdfPath,croppedCdfPath,diaryPath);
     
     cdfData = daysimeter12.readcdf(croppedCdfPath);
     
     [absTime,relTime,epoch,light,activity,masks,subjectID,deviceSN] = daysimeter12.convertcdf(cdfData);
-    
-    % Read diary
-    [~,~,diaryCell] = xlsread(diaryPath);
-    
-    % Get UTC offset
-    offsetStr = diaryCell{2,6};
-    offsetValue = str2double(regexprep(offsetStr,'[^-.0-9]*([-.0-9]*)[^-.0-9]*','$1'));
-    
-    % Adjust time
-    offset = utcoffset(offsetValue,'hours');
-    absTime.offset = offset;
     
     % Perform Analyses
     % Average
