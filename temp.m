@@ -8,21 +8,40 @@ circadianDir = 'C:\Users\jonesg5\Documents\GitHub\circadian';
 addpath(circadianDir);
 
 % Map paths
-projectDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
-originalDir = fullfile(projectDir,'originalData');
-croppedDir = fullfile(projectDir,'croppedData');
-daysigramDir = fullfile(projectDir,'daysigramReports');
-compositeDir = fullfile(projectDir,'compositeReports');
 
-subDirListing = findSubDirs(originalDir);
+defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+selectedDir = uigetdir(defaultDir,'Select folder of files to compare.');
+if selectedDir == 0;
+    return;
+end
 
-[~,recentIdx] = max([subDirListing.datenum]);
-dirRecent = subDirListing(recentIdx);
+% projectDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+originalDir = fullfile(selectedDir,'originals'); %fullfile(projectDir,'originalData');
+croppedDir = fullfile(selectedDir,'cropped');
+daysigramDir = fullfile(selectedDir,'reports');
+compositeDir = fullfile(selectedDir,'reports');
 
-batchDir = fullfile(originalDir,dirRecent.name);
-subjectDirListing = findSubDirs(batchDir);
+if exist(croppedDir,'dir') ~= 7
+    mkdir(croppedDir)
+end
 
-subjectDirArray = fullfile(batchDir,{subjectDirListing.name});
+if exist(daysigramDir,'dir') ~= 7
+    mkdir(daysigramDir)
+end
+
+if exist(compositeDir,'dir') ~= 7
+    mkdir(compositeDir)
+end
+
+% subDirListing = findSubDirs(originalDir);
+% 
+% [~,recentIdx] = max([subDirListing.datenum]);
+% dirRecent = subDirListing(recentIdx);
+% 
+% batchDir = fullfile(originalDir,dirRecent.name);
+% subjectDirListing = findSubDirs(batchDir);
+
+subjectDirArray = {selectedDir}; %fullfile(batchDir,{subjectDirListing.name});
 
 % Iterate through subject directories
 nSubject = numel(subjectDirArray);
@@ -30,11 +49,11 @@ for iSubject = 1:nSubject
     % Map paths
     thisSubjectDir = subjectDirArray{iSubject};
     
-    originalCdfListing = dir([thisSubjectDir,filesep,'*.cdf']);
+    originalCdfListing = dir([originalDir,filesep,'*.cdf']);
     if isempty(originalCdfListing)
         continue;
     end
-    originalCdfPath = fullfile(thisSubjectDir,originalCdfListing(1).name);
+    originalCdfPath = fullfile(originalDir,originalCdfListing(1).name);
     
     croppedCdfPath = fullfile(croppedDir,originalCdfListing(1).name);
     

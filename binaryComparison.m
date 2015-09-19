@@ -2,7 +2,7 @@ function varargout = binaryComparison
 %BINARYCOMPARISON Summary of this function goes here
 %   Detailed explanation goes here
 
-defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData\originalData';
+defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 selectedDir = uigetdir(defaultDir,'Select folder of files to compare.');
 if selectedDir == 0;
     return;
