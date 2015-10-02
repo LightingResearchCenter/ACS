@@ -3,10 +3,13 @@ function varargout = binaryComparison
 %   Detailed explanation goes here
 
 defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
-selectedDir = uigetdir(defaultDir,'Select folder of files to compare.');
-if selectedDir == 0;
+subjectDir = uigetdir(defaultDir,'Select subject folder.');
+if subjectDir == 0;
     return;
 end
+selectedDir = fullfile(subjectDir,'downloaded_files');
+diagnostic_reportsDir = fullfile(subjectDir,'diagnostic_reports');
+
 listing = dir([selectedDir,filesep,'*DATA.txt']);
 fileNameArray = {listing(:).name};
 filePathArray = fullfile(selectedDir,fileNameArray);
@@ -34,7 +37,8 @@ end
 if nargout == 1
     varargout = T;
 else
-    excelPath = fullfile(selectedDir,'comparison.xlsx');
+    timestamp = datestr(now,'yyyy-mm-dd_HHMM');
+    excelPath = fullfile(diagnostic_reportsDir,['comparison_',timestamp,'.xlsx']);
     writetable(T,excelPath,'WriteRowNames',true);
     winopen(excelPath);
 end

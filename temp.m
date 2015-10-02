@@ -10,28 +10,19 @@ addpath(circadianDir);
 % Map paths
 
 defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
-selectedDir = uigetdir(defaultDir,'Select folder of files to compare.');
+selectedDir = uigetdir(defaultDir,'Select folder of files to process.');
 if selectedDir == 0;
     return;
 end
 
 % projectDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
-originalDir = fullfile(selectedDir,'originals'); %fullfile(projectDir,'originalData');
-croppedDir = fullfile(selectedDir,'cropped');
-daysigramDir = fullfile(selectedDir,'reports');
-compositeDir = fullfile(selectedDir,'reports');
+originalDir = fullfile(selectedDir,'best_download');
+croppedDir = fullfile(selectedDir,'marked_download');
+reportsDir = fullfile(selectedDir,'reports');
 
-if exist(croppedDir,'dir') ~= 7
-    mkdir(croppedDir)
-end
 
-if exist(daysigramDir,'dir') ~= 7
-    mkdir(daysigramDir)
-end
 
-if exist(compositeDir,'dir') ~= 7
-    mkdir(compositeDir)
-end
+
 
 % subDirListing = findSubDirs(originalDir);
 % 
@@ -57,8 +48,13 @@ for iSubject = 1:nSubject
     
     croppedCdfPath = fullfile(croppedDir,originalCdfListing(1).name);
     
-    diaryListing = dir([thisSubjectDir,filesep,'*.xlsx']);
-    diaryPath = fullfile(thisSubjectDir,diaryListing(1).name);
+    diaryListing = dir([thisSubjectDir,filesep,'best_diary',filesep,'*.xlsx']);
+    diaryPath = fullfile(thisSubjectDir,'best_diary',diaryListing(1).name);
+    
+    if exist(croppedDir,'dir') == 7
+        rmdir(croppedDir,'s')
+    end
+    mkdir(croppedDir)
     
     ACScropcdf(originalCdfPath,croppedCdfPath,diaryPath);
     
@@ -84,13 +80,18 @@ for iSubject = 1:nSubject
     [         ~,Miller.cs] = millerize.millerize(relTime,light.cs,masks);
     [Miller.time,Miller.activity] = millerize.millerize(relTime,activity,masks);
     
+    if exist(reportsDir,'dir') == 7
+        rmdir(reportsDir,'s')
+    end
+    mkdir(reportsDir)
+    
     
     % Generate Plots
     sheetTitle = {'American Cancer Society';['Subject ID: ',subjectID,', Device SN:',deviceSN]};
     fileID = ['subjectID',subjectID,'_deviceSN',deviceSN];
-    reports.daysigram.daysigram(2,sheetTitle,absTime.localDateNum,masks,activity,light.cs,'cs',[0,1],10,daysigramDir,fileID);
+    reports.daysigram.daysigram(2,sheetTitle,absTime.localDateNum,masks,activity,light.cs,'cs',[0,1],10,reportsDir,fileID);
     figTitle = 'American Cancer Society';
-    reports.composite.compositeReport(compositeDir,Phasor,Actigraphy,Average,Miller,subjectID,deviceSN,figTitle);
+    reports.composite.compositeReport(reportsDir,Phasor,Actigraphy,Average,Miller,subjectID,deviceSN,figTitle);
     clf(1)
 end
 

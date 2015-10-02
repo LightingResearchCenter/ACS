@@ -24,8 +24,8 @@ bedCell(~rowChar) = [];
 riseCell(~rowChar) = [];
 
 % Convert text to datenum
-bedTimeArray = datenum(bedCell);
-riseTimeArray = datenum(riseCell);
+bedTimeArray = cellfun(@datenum,bedCell);
+riseTimeArray = cellfun(@datenum,riseCell);
 
 end
 
