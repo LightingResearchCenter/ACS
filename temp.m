@@ -4,7 +4,8 @@ clear
 clc
 
 % Enable dependencies
-circadianDir = 'C:\Users\jonesg5\Documents\GitHub\circadian';
+[githubDir,~,~] = fileparts(pwd);
+circadianDir = fullfile(githubDir,'circadian');
 addpath(circadianDir);
 
 % Map paths
