@@ -4,7 +4,13 @@ function inventoryFolders
 
 rootDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 
-listing = dir(rootDir);
+options = {'Q1','Q2','Q3','Q4'};
+choice = menu('Choose a quarter to inventory.',options);
+quarter = options{choice};
+
+quarterDir = fullfile(rootDir,quarter);
+
+listing = dir(quarterDir);
 listingDir = listing([listing.isdir]);
 
 excludedDir = strcmp('.',{listingDir.name}) | ...
@@ -14,7 +20,7 @@ excludedDir = strcmp('.',{listingDir.name}) | ...
 
 listingSubjectDir = listingDir(~excludedDir);
 
-subject = fullfile(rootDir,{listingSubjectDir.name}');
+subject = fullfile(quarterDir,{listingSubjectDir.name}');
 
 best_download = fullfile(subject,'best_download');
 marked_download = fullfile(subject,'marked_download');
@@ -63,9 +69,9 @@ folder_inventory = table(folder_name, downloaded_files_exists, ...
     do_NOT_use_exists);
 
 timestamp = datestr(now,'yyyy-mm-dd_HHMM');
-excelPath = fullfile(rootDir,'weekly_reports',['folder_inventory_',timestamp,'.xlsx']);
+excelPath = fullfile(rootDir,'weekly_reports',[quarter,'_folder_inventory_',timestamp,'.xlsx']);
 writetable(folder_inventory,excelPath);
-%winopen(excelPath);
+winopen(excelPath);
 
 end
 
