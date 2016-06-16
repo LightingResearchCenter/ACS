@@ -62,6 +62,7 @@ while bed == true
         file = fullfile(pathName, fileName);
         [bedTimeArray,riseTimeArray,offset] = readDiary(file);
         % Adjust time
+        absTime = correctDST(absTime,cdfData.GlobalAttributes.creationDate);
         absTime.offset = offset;
         timeArray = absTime.localDateNum;
         
@@ -177,7 +178,7 @@ hArea = area(timeArray,~logicalArray2);
 set(hArea,'FaceColor',[.6,.6,.6],'EdgeColor','none');
 hold on
 plot(timeArray,[csArray, activityArray])
-datetick2('x');
+datetick('x');
 hold off
 legend('Crop','Circadian Stimulus','Activity');
 end
