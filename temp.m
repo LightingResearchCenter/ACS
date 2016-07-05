@@ -9,8 +9,12 @@ circadianDir = fullfile(githubDir,'circadian');
 addpath(circadianDir);
 
 % Map paths
+if ispc
+    defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+elseif ismac
+    defaultDir = '/Volumes/projects/AmericanCancerSociety/DaysimeterData';
+end
 
-defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 selectedDir = uigetdir(defaultDir,'Select folder of files to process.');
 if selectedDir == 0;
     return;
