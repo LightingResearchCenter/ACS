@@ -78,7 +78,9 @@ for iSubject = 1:nSubject
     Average.nDays = n;
     % Phasor
     Phasor = phasor.prep(absTime,epoch,light,activity,masks);
-    display(Phasor.nDays);
+    display(['Phasor nDays = ',num2str(Phasor.nDays)]);
+    prcnt_compliance = 100*sum(masks.compliance(masks.observation))/sum(masks.observation);
+    display(['Compliance = ',num2str(prcnt_compliance),'%']);
     % Actigraphy
     Actigraphy = isiv.prep(absTime,epoch,activity,masks);
     % Miller
