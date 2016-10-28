@@ -2,7 +2,11 @@ function varargout = binaryComparison
 %BINARYCOMPARISON Summary of this function goes here
 %   Detailed explanation goes here
 
-defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+if ispc
+    defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+elseif ismac
+    defaultDir = '/Volumes/projects/AmericanCancerSociety/DaysimeterData';
+end
 subjectDir = uigetdir(defaultDir,'Select subject folder.');
 if subjectDir == 0
     return;
@@ -40,7 +44,12 @@ else
     timestamp = datestr(now,'yyyy-mm-dd_HHMM');
     excelPath = fullfile(diagnostic_reportsDir,['comparison_',timestamp,'.xlsx']);
     writetable(T,excelPath,'WriteRowNames',true);
-    winopen(excelPath);
+    if ispc
+        winopen(excelPath);
+    elseif ismac
+        syscmd = ['open ', excelPath, ' &'];
+        system(syscmd);
+    end
 end
 
 end

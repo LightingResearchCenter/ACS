@@ -14,18 +14,34 @@ offset = utcoffset(offsetValue,'hours');
 bedCell = diaryCell(2:end,2);
 riseCell = diaryCell(2:end,3);
 
-% Find rows with text
-bedChar = cellfun(@ischar,bedCell);
-riseChar = cellfun(@ischar,riseCell);
-rowChar = bedChar | riseChar;
+if ispc
+    % Find rows with text
+    bedChar = cellfun(@ischar,bedCell);
+    riseChar = cellfun(@ischar,riseCell);
+    rowChar = bedChar | riseChar;
+    
+    % Remove non-text rows
+    bedCell(~rowChar) = [];
+    riseCell(~rowChar) = [];
+    
+    % Convert text to datenum
+    bedTimeArray = cellfun(@datenum,bedCell);
+    riseTimeArray = cellfun(@datenum,riseCell);
+elseif ismac
+    % Find rows with numbers
+    bedNum = cellfun(@isnumeric,bedCell);
+    riseNum = cellfun(@isnumeric,riseCell);
+    rowNum = bedNum | riseNum;
+    
+    % Remove non-numeric rows
+    bedCell(~rowNum) = [];
+    riseCell(~rowNum) = [];
+    
+    % Convert excel serial datetime to datenum
+    bedTimeArray = cell2mat(bedCell) + 693960;
+    riseTimeArray = cell2mat(riseCell) + 693960;
+end
 
-% Remove empty rows
-bedCell(~rowChar) = [];
-riseCell(~rowChar) = [];
-
-% Convert text to datenum
-bedTimeArray = cellfun(@datenum,bedCell);
-riseTimeArray = cellfun(@datenum,riseCell);
 
 end
 

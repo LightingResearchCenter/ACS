@@ -9,8 +9,12 @@ circadianDir = fullfile(githubDir,'circadian');
 addpath(circadianDir);
 
 % Map paths
+if ispc
+    defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+elseif ismac
+    defaultDir = '/Volumes/projects/AmericanCancerSociety/DaysimeterData';
+end
 
-defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 selectedDir = uigetdir(defaultDir,'Select folder of files to process.');
 if selectedDir == 0
     return;
@@ -75,9 +79,11 @@ for iSubject = 1:nSubject
     Average.nDays = n;
     % Phasor
     Phasor = phasor.prep(absTime,epoch,light,activity,masks);
+
     display(['      Useable days = ',num2str(numel(t)*epoch.days)]);
     display(['       Phasor days = ',num2str(Phasor.nDays)]);
     display(['Percent compliance = ',num2str(100*sum(masks.compliance(masks.observation))/sum(masks.observation))]);
+
     % Actigraphy
     Actigraphy = isiv.prep(absTime,epoch,activity,masks);
     % Miller

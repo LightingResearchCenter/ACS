@@ -178,7 +178,7 @@ hArea = area(timeArray,~logicalArray2);
 set(hArea,'FaceColor',[.6,.6,.6],'EdgeColor','none');
 hold on
 plot(timeArray,[csArray, activityArray])
-datetick('x');
+datetick2('x');
 hold off
 legend('Crop','Circadian Stimulus','Activity');
 end
