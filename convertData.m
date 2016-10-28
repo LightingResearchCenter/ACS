@@ -2,7 +2,8 @@ function convertData
 
 [githubDir,~,~] = fileparts(pwd);
 circadianDir = fullfile(githubDir,'circadian');
-addpath(circadianDir);
+d12packDir = fullfile(githubDir,'d12pack');
+addpath(circadianDir,d12packDir);
 
 CalibrationPath = '\\root\projects\DaysimeterAndDimesimeterReferenceFiles\recalibration2016\calibration_log.csv';
 
@@ -16,7 +17,8 @@ quarterDir = fullfile(projectDir,quarterNames);
 nQ = numel(quarterDir);
 
 %% Import Calibration Data
-cal = readtable(CalibrationPath);
+% cal = readtable(CalibrationPath,'Format','%d %f %f %f %{yyyy-MMM-dd}D %s');
+cal = readtable(CalibrationPath,'Format','%d %f %f %f %s %s');
 cal.Properties.VariableNames{1} = 'SN';
 
 %% Import Time Zone Data
@@ -91,7 +93,11 @@ for iSub = nSub:-1:1
     % Find subject's timezone
     idxTz = strcmp(subjectTz.id,thisSub);
     matchingTz = subjectTz(idxTz,:);
-    thisTz = matchingTz.tz{1};
+    if ~isempty(matchingTz)
+        thisTz = matchingTz.tz{1};
+    else
+        thisTz = 'America/New_York';
+    end
     
     % Read data from CDF
     cdfData = daysimeter12.readcdf(cdfPath);
@@ -110,7 +116,19 @@ for iSub = nSub:-1:1
         thisObj.CalibrationPath = CalibrationPath;
         
         % Set ccalibration ratio method
-        thisObj.RatioMethod = 'luxthreshold';
+        thisObj.RatioMethod = 'original+factor';
+        
+        postIRdateStr = thisCal.Date(strcmp(thisCal.Label,'PostIRCorrection'));
+        postIRdateNum = datenum(postIRdateStr{1});
+        
+        cdfStartEpoch = cdflib.epochBreakdown(cdfData.Variables.time(1));
+        cdfStartNum = datenum(cdfStartEpoch(1:6)');
+        
+        if cdfStartNum < postIRdateNum
+            thisObj.CorrectionFactor = 1.16;
+        else
+            thisObj.CorrectionFactor = 1;
+        end
         
         % Add subject ID
         thisObj.ID = thisSub;
@@ -143,7 +161,7 @@ for iSub = nSub:-1:1
         thisObj.Compliance(1:numel(cdfData.Variables.complianceArray),1) = tmpCompliance(:);
         
         % Add bed log
-        thisObj.BedLog = thisObj.BedLog.import(diaryPath);
+        thisObj.BedLog = thisObj.BedLog.import(diaryPath,thisTz);
         
         objArray{iSub,1} = thisObj;
     end

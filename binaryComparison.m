@@ -4,7 +4,7 @@ function varargout = binaryComparison
 
 defaultDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 subjectDir = uigetdir(defaultDir,'Select subject folder.');
-if subjectDir == 0;
+if subjectDir == 0
     return;
 end
 selectedDir = fullfile(subjectDir,'downloaded_files');
