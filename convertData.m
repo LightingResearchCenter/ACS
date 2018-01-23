@@ -73,22 +73,24 @@ for iSub = nSub:-1:1
     thisSub = subject{iSub};
     
     % Find subject files
-    lsLOG   = dir([downloadDir{iSub},filesep,'*-LOG.txt']);
-    lsDATA  = dir([downloadDir{iSub},filesep,'*-DATA.txt']);
-    lsCDF   = dir([markedDir{iSub},filesep,'*.cdf']);
+%     lsLOG   = dir([downloadDir{iSub},filesep,'*-LOG.txt']);
+%     lsDATA  = dir([downloadDir{iSub},filesep,'*-DATA.txt']);
+    lsRawCDF  = dir([downloadDir{iSub},filesep,'*.cdf']);
+    lsCroppedCDF   = dir([markedDir{iSub},filesep,'*.cdf']);
     lsDiary = dir([diaryDir{iSub},filesep,'*.xlsx']);
     
     % Skip subjects missing files
-    if isempty(lsLOG) || isempty(lsDATA) || isempty(lsCDF) || isempty(lsDiary)
+    if isempty(lsRawCDF) || isempty(lsCroppedCDF) || isempty(lsDiary)
         warning(['Subject ',thisSub,' is missing files and was skipped.']);
         continue;
     end
     
     % Construct subject file paths
-    loginfoPath = fullfile(downloadDir{iSub},lsLOG(1).name);
-    datalogPath	= fullfile(downloadDir{iSub},lsDATA(1).name);
-    cdfPath     = fullfile(markedDir{iSub},  lsCDF(1).name);
-    diaryPath	= fullfile(diaryDir{iSub},   lsDiary(1).name);
+%     loginfoPath = fullfile(downloadDir{iSub},lsLOG(1).name);
+%     datalogPath	= fullfile(downloadDir{iSub},lsDATA(1).name);
+    rawCdfFilePath = fullfile(downloadDir{iSub},lsRawCDF(1).name);
+    croppedCdfPath = fullfile(markedDir{iSub},  lsCroppedCDF(1).name);
+    diaryPath	   = fullfile(diaryDir{iSub},   lsDiary(1).name);
     
     % Find subject's timezone
     idxTz = strcmp(subjectTz.id,thisSub);
@@ -96,12 +98,13 @@ for iSub = nSub:-1:1
     if ~isempty(matchingTz)
         thisTz = matchingTz.tz{1};
     else
+        warning(['Subject ',thisSub,' missing time zone. New York used.'])
         thisTz = 'America/New_York';
     end
     
     % Read data from CDF
-    cdfData = daysimeter12.readcdf(cdfPath);
-    thisSn = str2double(cdfData.GlobalAttributes.deviceSN(end-2:end));
+    croppedCdfData = daysimeter12.readcdf(croppedCdfPath);
+    thisSn = str2double(croppedCdfData.GlobalAttributes.deviceSN(end-2:end));
     
     % Check if calibration is avaliable for Daysimeter
     idxCalSn = ismember(cal.SN,thisSn);
@@ -121,7 +124,7 @@ for iSub = nSub:-1:1
         postIRdateStr = thisCal.Date(strcmp(thisCal.Label,'PostIRCorrection'));
         postIRdateNum = datenum(postIRdateStr{1});
         
-        cdfStartEpoch = cdflib.epochBreakdown(cdfData.Variables.time(1));
+        cdfStartEpoch = cdflib.epochBreakdown(croppedCdfData.Variables.time(1));
         cdfStartNum = datenum(cdfStartEpoch(1:6)');
         
         if cdfStartNum < postIRdateNum
@@ -141,8 +144,10 @@ for iSub = nSub:-1:1
         thisObj.Session = struct('Name',['Q',num2str(subjectQ(iSub))]);
         
         % Import the original data
-        thisObj.log_info = thisObj.readloginfo(loginfoPath);
-        thisObj.data_log = thisObj.readdatalog(datalogPath);
+        [log_info,data_log] = cdf2raw(rawCdfFilePath);
+        
+        thisObj.log_info = log_info;
+        thisObj.data_log = data_log;
         
         % Correct for DST
         if ~isdst(thisObj.Time(1)) && isdst(thisObj.Time(end))
@@ -152,13 +157,31 @@ for iSub = nSub:-1:1
         
         % Add observation mask (accounting for cdfread error)
         thisObj.Observation = false(size(thisObj.Time));
-        tmpObservation = logical(cdfData.Variables.logicalArray);
-        thisObj.Observation(1:numel(cdfData.Variables.logicalArray),1) = tmpObservation(:);
+        tmpObservation = logical(croppedCdfData.Variables.logicalArray);
+        m = numel(thisObj.Observation);
+        n = numel(tmpObservation);
+        if n == m
+            thisObj.Observation = tmpObservation(:);
+        elseif n < m
+            thisObj.Observation(1:n,1) = tmpObservation(:);
+        else %if m > n
+            tmpObservation = tmpObservation(1:m);
+            thisObj.Observation = tmpObservation(:);
+        end
         
         % Add compliance mask (accounting for cdfread error)
         thisObj.Compliance = true(size(thisObj.Time));
-        tmpCompliance = logical(cdfData.Variables.complianceArray);
-        thisObj.Compliance(1:numel(cdfData.Variables.complianceArray),1) = tmpCompliance(:);
+        tmpCompliance = logical(croppedCdfData.Variables.complianceArray);
+        m = numel(thisObj.Compliance);
+        n = numel(tmpCompliance);
+        if n == m
+            thisObj.Compliance = tmpCompliance(:);
+        elseif n < m
+            thisObj.Compliance(1:n,1) = tmpCompliance(:);
+        else %if m > n
+            tmpCompliance = tmpCompliance(1:m);
+            thisObj.Compliance = tmpCompliance(:);
+        end
         
         % Add bed log
         thisObj.BedLog = thisObj.BedLog.import(diaryPath,thisTz);

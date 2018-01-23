@@ -1,22 +1,16 @@
 function analyzeData
 %ANALYZEDATA Summary of this function goes here
 %   Detailed explanation goes here
-timestamp = datestr(now,'yyyy-mm-dd HH-MM');
+timestamp = upper(datestr(now,'mmmdd'));
 
 [githubDir,~,~] = fileparts(pwd);
 d12packDir = fullfile(githubDir,'d12pack');
 addpath(d12packDir);
 
-projectDir = '\\root\projects\AmericanCancerSociety';
-dataDir = fullfile(projectDir,'DaysimeterData');
-saveDir = fullfile(projectDir,'DaysimeterMetrics');
+projectDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
+saveDir = fullfile(projectDir,'metrics');
 
-ls = dir([dataDir,filesep,'data snapshot*']);
-[~,idxMostRecent] = max(vertcat(ls.datenum));
-dataName = ls(idxMostRecent).name;
-dataPath = fullfile(dataDir,dataName);
-
-load(dataPath);
+objArray = loadData;
 
 nObj = numel(objArray);
 h = waitbar(0,'Please wait. Analyzing data...');

@@ -1,14 +1,14 @@
-function MakeDaysigrams
+function MakeComposites
 %MAKE Summary of this function goes here
 %   Detailed explanation goes here
 
-h = waitbar(0,'Please wait generating Daysigrams...');
+h = waitbar(0,'Please wait generating Reports...');
 
 addpath('C:\Users\jonesg5\Documents\GitHub\d12pack');
 
 projectDir = '\\root\projects\AmericanCancerSociety\DaysimeterData';
 
-exportDir = fullfile(projectDir,'daysigrams');
+exportDir = fullfile(projectDir,'composites');
 
 objArray = loadData;
 
@@ -26,13 +26,13 @@ for iObj = 1:nObj
     
     titleText = {'American Cancer Society';['ID: ',thisObj.ID,', Session: ',thisObj.Session.Name,', Device SN: ',num2str(thisObj.SerialNumber)]};
     
-    d = d12pack.daysigram(thisObj,titleText);
+    d = d12pack.composite(thisObj,titleText);
     
-    d(1).Title = titleText;
+    d.Title = titleText;
     
-    saveas(d(1).Figure,filePath);
+    saveas(d.Figure,filePath);
     
-    close(d(1).Figure);
+    close(d.Figure);
     
     waitbar(iObj/nObj,h);
 end
